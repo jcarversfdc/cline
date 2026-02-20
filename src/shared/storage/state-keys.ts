@@ -140,6 +140,10 @@ const API_HANDLER_SETTINGS_FIELDS = {
 	ocaMode: { default: "internal" as string },
 	aihubmixBaseUrl: { default: undefined as string | undefined },
 	aihubmixAppCode: { default: undefined as string | undefined },
+	salesforceAccessToken: { default: undefined as string | undefined },
+	salesforceInstanceUrl: { default: undefined as string | undefined },
+	salesforceModelId: { default: undefined as string | undefined },
+	salesforceApiEnv: { default: undefined as string | undefined },
 
 	// Plan mode configurations
 	planModeApiModelId: { default: undefined as string | undefined },

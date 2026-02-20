@@ -36,6 +36,7 @@ import { OpenRouterHandler } from "./providers/openrouter"
 import { QwenHandler } from "./providers/qwen"
 import { QwenCodeHandler } from "./providers/qwen-code"
 import { RequestyHandler } from "./providers/requesty"
+import { SalesforceHandler } from "./providers/salesforce"
 import { SambanovaHandler } from "./providers/sambanova"
 import { SapAiCoreHandler } from "./providers/sapaicore"
 import { TogetherHandler } from "./providers/together"
@@ -440,6 +441,14 @@ function createHandlerForProvider(
 				onRetryAttempt: options.onRetryAttempt,
 				nousResearchApiKey: options.nousResearchApiKey,
 				apiModelId: mode === "plan" ? options.planModeNousResearchModelId : options.actModeNousResearchModelId,
+			})
+		case "salesforce":
+			return new SalesforceHandler({
+				onRetryAttempt: options.onRetryAttempt,
+				salesforceAccessToken: options.salesforceAccessToken,
+				salesforceInstanceUrl: options.salesforceInstanceUrl,
+				salesforceModelId: options.salesforceModelId,
+				salesforceApiEnv: options.salesforceApiEnv,
 			})
 		default:
 			return new AnthropicHandler({

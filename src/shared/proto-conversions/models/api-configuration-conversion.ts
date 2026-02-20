@@ -326,6 +326,8 @@ function convertApiProviderToProto(provider: string | undefined): ProtoApiProvid
 			return ProtoApiProvider.NOUSRESEARCH
 		case "openai-codex":
 			return ProtoApiProvider.OPENAI_CODEX
+		case "salesforce":
+			return ProtoApiProvider.SALESFORCE
 		default:
 			return ProtoApiProvider.ANTHROPIC
 	}
@@ -416,6 +418,8 @@ export function convertProtoToApiProvider(provider: ProtoApiProvider): ApiProvid
 			return "nousResearch"
 		case ProtoApiProvider.OPENAI_CODEX:
 			return "openai-codex"
+		case ProtoApiProvider.SALESFORCE:
+			return "salesforce"
 		default:
 			return "anthropic"
 	}

@@ -104,7 +104,7 @@ message Secrets {
   optional string oca_refresh_token = 42;
   optional string mcp_o_auth_secrets = 43;
   optional string cline_api_key = 44;
-  optional string openai_codex_oauth_credentials = 47;
+  optional string openai_codex_oauth_credentials = 48;
 }
 
 // NOTE: Add new fields under API_HANDLER_SETTINGS_FIELDS or USER_SETTINGS_FIELDS
@@ -280,6 +280,10 @@ message Settings {
   optional bool auto_approve_all_toggled = 174;
   optional bool double_check_completion_enabled = 176;
   map<string, string> open_ai_headers = 177;
+  optional string salesforce_access_token = 178;
+  optional string salesforce_instance_url = 179;
+  optional string salesforce_model_id = 180;
+  optional string salesforce_api_env = 181;
 }
 
 message DictationSettings {

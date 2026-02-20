@@ -72,6 +72,7 @@ export const ProviderToApiKeyMap: Partial<Record<ApiProvider, keyof Secrets | (k
 	sambanova: "sambanovaApiKey",
 	cerebras: "cerebrasApiKey",
 	groq: "groqApiKey",
+	salesforce: "salesforceApiKey",
 	huggingface: "huggingFaceApiKey",
 	"huawei-cloud-maas": "huaweiCloudMaasApiKey",
 	dify: "difyApiKey",

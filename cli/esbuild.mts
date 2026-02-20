@@ -209,7 +209,10 @@ if (production) {
 }
 
 const config: esbuild.BuildOptions = {
-	entryPoints: [path.join(__dirname, "src", "index.ts")],
+	entryPoints: [
+		{ in: path.join(__dirname, "src", "index.ts"), out: "cli" },
+		{ in: path.join(__dirname, "src", "service-api.ts"), out: "service-api" },
+	],
 	bundle: true,
 	minify: production,
 	sourcemap: !production,
@@ -218,10 +221,11 @@ const config: esbuild.BuildOptions = {
 	tsconfig: path.join(__dirname, "tsconfig.json"),
 	plugins: [copyWasmFiles, aliasResolverPlugin, vscodeStubPlugin, stubOptionalModulesPlugin, esbuildProblemMatcherPlugin],
 	format: "esm",
+	outExtension: { ".js": ".mjs" },
 	sourcesContent: false,
 	platform: "node",
 	target: "node20",
-	outfile: path.join(__dirname, "dist", "cli.mjs"),
+	outdir: path.join(__dirname, "dist"),
 	// These modules need to load files from the module directory at runtime
 	external: [
 		"@grpc/reflection",
@@ -259,10 +263,10 @@ async function main() {
 		await ctx.rebuild()
 		await ctx.dispose()
 
-		// Make the output executable
-		const outfile = path.join(__dirname, "dist", "cli.mjs")
-		if (fs.existsSync(outfile)) {
-			fs.chmodSync(outfile, "755")
+		// Make the CLI entry point executable
+		const cliOutfile = path.join(__dirname, "dist", "cli.mjs")
+		if (fs.existsSync(cliOutfile)) {
+			fs.chmodSync(cliOutfile, "755")
 		}
 	}
 }

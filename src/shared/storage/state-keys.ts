@@ -336,6 +336,7 @@ const SECRETS_KEYS = [
 	"sapAiCoreClientId",
 	"sapAiCoreClientSecret",
 	"groqApiKey",
+	"salesforceApiKey",
 	"huaweiCloudMaasApiKey",
 	"basetenApiKey",
 	"vercelAiGatewayApiKey",

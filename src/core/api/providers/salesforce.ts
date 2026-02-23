@@ -268,7 +268,7 @@ interface SalesforceStreamChunk {
 // SalesforceHandler
 // ---------------------------------------------------------------------------
 
-const DEFAULT_MODEL = "sfdc_ai__DefaultBedrockAnthropicClaude3_5Sonnet"
+const DEFAULT_MODEL = "llmgateway__BedrockAnthropicClaude37Sonnet"
 
 export class SalesforceHandler implements ApiHandler {
 	private options: SalesforceHandlerOptions

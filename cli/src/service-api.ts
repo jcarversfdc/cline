@@ -230,7 +230,7 @@ async function configureSalesforceProvider(credentials: SalesforceCredentials): 
 	stateManager.setSecret("salesforceApiKey", credentials.accessToken)
 
 	// Set the generic model ID so Cline's telemetry/display has a value.
-	const displayModel = credentials.modelId ?? "sfdc_ai__DefaultBedrockAnthropicClaude3_5Sonnet"
+	const displayModel = credentials.modelId ?? "llmgateway__BedrockAnthropicClaude37Sonnet"
 	stateManager.setGlobalState("actModeApiModelId" as Parameters<typeof stateManager.setGlobalState>[0], displayModel)
 	stateManager.setGlobalState("planModeApiModelId" as Parameters<typeof stateManager.setGlobalState>[0], displayModel)
 

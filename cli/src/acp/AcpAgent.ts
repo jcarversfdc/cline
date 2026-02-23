@@ -154,4 +154,31 @@ export class AcpAgent implements acp.Agent {
 		this.subscribedSessions.clear()
 		return this.clineAgent.shutdown()
 	}
+
+	/**
+	 * Handle ACP extension methods. Supports cline/getConversationHistory so
+	 * clients (e.g. agentic-dx) can retrieve the raw API conversation history
+	 * for a session over the protocol.
+	 */
+	async extMethod(method: string, params: Record<string, unknown>): Promise<Record<string, unknown>> {
+		if (method === "cline/getConversationHistory") {
+			const sessionId = params.sessionId as string | undefined
+			if (typeof sessionId !== "string") {
+				return { history: null, error: "sessionId is required" }
+			}
+			const session = this.clineAgent.sessions.get(sessionId)
+			if (!session?.controller?.task) {
+				return { history: null }
+			}
+			try {
+				const history = session.controller.task.messageStateHandler.getApiConversationHistory() as
+					| { role: string; content: unknown }[]
+					| null
+				return { history: history ?? null }
+			} catch {
+				return { history: null }
+			}
+		}
+		throw new Error(`Unknown extension method: ${method}`)
+	}
 }

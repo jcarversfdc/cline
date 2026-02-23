@@ -260,6 +260,7 @@ export class ToolExecutor {
 	 * Main entry point for tool execution - called by Task class
 	 */
 	public async executeTool(block: ToolUse): Promise<void> {
+		process.stdout.write(`[Cline] Executing tool: ${block.name}${block.params?.path ? ` path=${block.params.path}` : ""}\n`)
 		await this.execute(block)
 	}
 

@@ -59,6 +59,7 @@ import { ACPDiffViewProvider } from "../acp/ACPDiffViewProvider.js"
 import { ACPHostBridgeClientProvider } from "../acp/ACPHostBridgeClientProvider.js"
 import { AcpTerminalManager } from "../acp/AcpTerminalManager.js"
 import { fetchOpenRouterModels, usesOpenRouterModels } from "../utils/openrouter-models"
+import { configureSalesforceProvider, enableAutoApprove, getSalesforceCredentialsFromEnv } from "../utils/salesforce-config.js"
 import { CliContextResult, initializeCliContext } from "../vscode-context.js"
 import { ClineSessionEmitter } from "./ClineSessionEmitter.js"
 import { translateMessage } from "./messageTranslator.js"
@@ -177,6 +178,15 @@ export class ClineAgent implements acp.Agent {
 		this.initializeHostProvider(this.clientCapabilities, connection)
 		await ClineEndpoint.initialize(this.ctx.EXTENSION_DIR)
 		await StateManager.initialize(this.ctx.storageContext)
+
+		// When running as ACP subprocess (e.g. agentic-dx), credentials may be
+		// supplied via env vars. If present, configure Salesforce provider and
+		// enable auto-approve for headless operation.
+		const sfCreds = getSalesforceCredentialsFromEnv()
+		if (sfCreds) {
+			await configureSalesforceProvider(sfCreds)
+			await enableAutoApprove()
+		}
 
 		return {
 			protocolVersion: PROTOCOL_VERSION,

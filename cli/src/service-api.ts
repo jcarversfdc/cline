@@ -12,7 +12,10 @@
  */
 
 import { PROTOCOL_VERSION } from "@agentclientprotocol/sdk"
-import { StateManager } from "@/core/storage/StateManager"
+import type { SalesforceCredentials } from "./utils/salesforce-config.js"
+import { configureSalesforceProvider, enableAutoApprove } from "./utils/salesforce-config.js"
+export type { SalesforceCredentials }
+
 import { ClineAgent } from "./agent/ClineAgent.js"
 import { ClineSessionEmitter } from "./agent/ClineSessionEmitter.js"
 import type { ClineAcpSession } from "./agent/types.js"
@@ -20,22 +23,6 @@ import type { ClineAcpSession } from "./agent/types.js"
 // ---------------------------------------------------------------------------
 // Public types
 // ---------------------------------------------------------------------------
-
-/**
- * Salesforce org credentials needed to authenticate against the LLM gateway.
- * These are passed per-engine-instance so each VaaS agent can carry its own
- * user's credentials.
- */
-export interface SalesforceCredentials {
-	/** Salesforce org access token (from OAuth) */
-	accessToken: string
-	/** Salesforce org instance URL (e.g. https://myorg.my.salesforce.com) */
-	instanceUrl: string
-	/** LLM model ID to use (optional, defaults to Anthropic Claude 3.5 Sonnet via gateway) */
-	modelId?: string
-	/** Gateway environment: prod | dev | test | perf | stage (default: prod) */
-	apiEnv?: string
-}
 
 /**
  * Options for creating a ClineEngine instance.
@@ -165,77 +152,10 @@ export async function createClineEngine(options: ClineEngineOptions): Promise<Cl
 	// Must happen AFTER agent.initialize() because StateManager is set up there.
 	await configureSalesforceProvider(options.credentials)
 
-	// Step 4: Enable auto-approve for all tool calls.
-	// Without this, Cline will halt each task and wait for permission via the
-	// PermissionHandler callback. In a headless service there is no interactive
-	// user to approve, so we enable global auto-approve.
-	//
-	// PAIN POINT (REQ 9 / security): This is global — there is no per-session
-	// or per-tool-type approval policy. Any code that Cline decides to run will
-	// execute without any check. Production deployments should implement a
-	// PermissionHandler that filters by tool type and path.
-	const stateManager = StateManager.get()
-	stateManager.setGlobalState("autoApproveAllToggled", true)
-	await stateManager.flushPendingState()
+	// Step 4: Enable auto-approve for all tool calls (headless mode).
+	await enableAutoApprove()
 
 	return new ClineEngineImpl(agent)
-}
-
-// ---------------------------------------------------------------------------
-// Salesforce provider configuration
-// ---------------------------------------------------------------------------
-
-/**
- * Write Salesforce credentials into the StateManager global state so that
- * buildApiHandler() will pick them up when constructing a SalesforceHandler.
- *
- * These keys correspond to the fields added to API_HANDLER_SETTINGS_FIELDS in
- * src/shared/storage/state-keys.ts during Phase 1.
- *
- * PAIN POINT: StateManager stores settings as untyped key-value pairs. There
- * is no compile-time guarantee that the key names used here match the keys
- * read by SalesforceHandler. A typo in either location is a silent runtime
- * failure.
- */
-async function configureSalesforceProvider(credentials: SalesforceCredentials): Promise<void> {
-	const stateManager = StateManager.get()
-
-	// Set provider for both plan and act modes
-	stateManager.setGlobalState("actModeApiProvider", "salesforce")
-	stateManager.setGlobalState("planModeApiProvider", "salesforce")
-
-	// Store Salesforce-specific credentials in settings so SalesforceHandler
-	// can read them via ApiConfiguration options. Cast through `any` because
-	// the generated types may not yet be in sync if a full build hasn't run.
-	stateManager.setGlobalState(
-		"salesforceAccessToken" as Parameters<typeof stateManager.setGlobalState>[0],
-		credentials.accessToken,
-	)
-	stateManager.setGlobalState(
-		"salesforceInstanceUrl" as Parameters<typeof stateManager.setGlobalState>[0],
-		credentials.instanceUrl,
-	)
-	if (credentials.modelId) {
-		stateManager.setGlobalState("salesforceModelId" as Parameters<typeof stateManager.setGlobalState>[0], credentials.modelId)
-	}
-	if (credentials.apiEnv) {
-		stateManager.setGlobalState("salesforceApiEnv" as Parameters<typeof stateManager.setGlobalState>[0], credentials.apiEnv)
-	}
-
-	// Also store the access token as the "salesforceApiKey" secret so that
-	// ClineAgent.isAuthConfigured() passes. The auth check reads from the
-	// secrets store (not settings) via ProviderToApiKeyMap. Salesforce uses
-	// a short-lived access token rather than a static API key, so we reuse it
-	// here as the auth sentinel. The SalesforceHandler itself reads the token
-	// from API_HANDLER_SETTINGS_FIELDS (settings), not from secrets.
-	stateManager.setSecret("salesforceApiKey", credentials.accessToken)
-
-	// Set the generic model ID so Cline's telemetry/display has a value.
-	const displayModel = credentials.modelId ?? "llmgateway__BedrockAnthropicClaude37Sonnet"
-	stateManager.setGlobalState("actModeApiModelId" as Parameters<typeof stateManager.setGlobalState>[0], displayModel)
-	stateManager.setGlobalState("planModeApiModelId" as Parameters<typeof stateManager.setGlobalState>[0], displayModel)
-
-	await stateManager.flushPendingState()
 }
 
 // ---------------------------------------------------------------------------

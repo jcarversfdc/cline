@@ -135,7 +135,6 @@ export interface ClineEngine {
  */
 export async function createClineEngine(options: ClineEngineOptions): Promise<ClineEngine> {
 	const version = options.version ?? "1.0.0"
-	process.stdout.write("[Cline] Creating ClineEngine, initializing agent and Salesforce provider\n")
 
 	// Step 1: Create the agent. The constructor calls initializeCliContext()
 	// which sets up file-backed storage in ~/.cline (or $CLINE_DIR).
@@ -183,13 +182,11 @@ class ClineEngineImpl implements ClineEngine {
 		// For now, the isAuthConfigured() check falls through to ProviderToApiKeyMap
 		// lookup → undefined for "salesforce" → returns false. We must add
 		// "salesforce" to ProviderToApiKeyMap so the check passes.
-		process.stdout.write(`[Cline] Creating session, cwd=${cwd}\n`)
 		const response = await this.agent.newSession({ cwd, mcpServers: [] })
 		return response.sessionId
 	}
 
 	async sendMessage(sessionId: string, text: string): Promise<void> {
-		process.stdout.write(`[Cline] Sending message to session ${sessionId}\n`)
 		await this.agent.prompt({
 			sessionId,
 			prompt: [{ type: "text", text }],
@@ -197,12 +194,10 @@ class ClineEngineImpl implements ClineEngine {
 	}
 
 	getEmitter(sessionId: string): ClineSessionEmitter {
-		process.stdout.write(`[Cline] Subscribing to session events for session ${sessionId}\n`)
 		return this.agent.emitterForSession(sessionId)
 	}
 
 	async getConversationHistory(sessionId: string): Promise<{ role: string; content: unknown }[] | null> {
-		process.stdout.write(`[Cline] Retrieving conversation history for session ${sessionId}\n`)
 		const session: ClineAcpSession | undefined = this.agent.sessions.get(sessionId)
 		if (!session?.controller?.task) {
 			return null

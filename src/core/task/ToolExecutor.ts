@@ -260,7 +260,6 @@ export class ToolExecutor {
 	 * Main entry point for tool execution - called by Task class
 	 */
 	public async executeTool(block: ToolUse): Promise<void> {
-		process.stdout.write(`[Cline] Executing tool: ${block.name}${block.params?.path ? ` path=${block.params.path}` : ""}\n`)
 		await this.execute(block)
 	}
 
@@ -383,6 +382,19 @@ export class ToolExecutor {
 
 			// Check if a tool has already been used in this message (only enforced when parallel tool calling is disabled)
 			if (!this.isParallelToolCallingEnabled() && this.taskState.didAlreadyUseTool) {
+				// #region agent log
+				fetch("http://127.0.0.1:7243/ingest/e6c7d659-786b-4347-854e-3abe1c7d95c5", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						location: "ToolExecutor.ts:toolAlreadyUsed push",
+						message: "push toolAlreadyUsed to userMessageContent",
+						data: { blockName: block.name, umcLengthAfter: this.taskState.userMessageContent.length + 1 },
+						timestamp: Date.now(),
+						hypothesisId: "H5-Executor-alreadyUsed",
+					}),
+				}).catch(() => {})
+				// #endregion
 				this.taskState.userMessageContent.push({
 					type: "text",
 					text: formatResponse.toolAlreadyUsed(block.name),
@@ -451,6 +463,19 @@ export class ToolExecutor {
 	 * @param reason Human-readable explanation of why the tool was rejected
 	 */
 	private createToolRejectionMessage(block: ToolUse, reason: string): void {
+		// #region agent log
+		fetch("http://127.0.0.1:7243/ingest/e6c7d659-786b-4347-854e-3abe1c7d95c5", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				location: "ToolExecutor.ts:createToolRejectionMessage",
+				message: "push tool rejection to userMessageContent",
+				data: { blockName: block.name, umcLengthAfter: this.taskState.userMessageContent.length + 1 },
+				timestamp: Date.now(),
+				hypothesisId: "H5-Executor-reject",
+			}),
+		}).catch(() => {})
+		// #endregion
 		this.taskState.userMessageContent.push({
 			type: "text",
 			text: `${reason} ${ToolDisplayUtils.getToolDescription(block, this.coordinator)}`,
@@ -494,6 +519,19 @@ export class ToolExecutor {
 			text: `<hook_context source="${source}" type="${contextType}">\n${content}\n</hook_context>`,
 		}
 
+		// #region agent log
+		fetch("http://127.0.0.1:7243/ingest/e6c7d659-786b-4347-854e-3abe1c7d95c5", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				location: "ToolExecutor.ts:addHookContextToConversation",
+				message: "push hook context to userMessageContent",
+				data: { source, umcLengthAfter: this.taskState.userMessageContent.length + 1 },
+				timestamp: Date.now(),
+				hypothesisId: "H5-Executor-hook",
+			}),
+		}).catch(() => {})
+		// #endregion
 		this.taskState.userMessageContent.push(hookContextBlock)
 	}
 
@@ -599,6 +637,19 @@ export class ToolExecutor {
 	 * @param config The task configuration containing all necessary context
 	 */
 	private async handleCompleteBlock(block: ToolUse, config: any): Promise<void> {
+		// #region agent log
+		fetch("http://127.0.0.1:7243/ingest/e6c7d659-786b-4347-854e-3abe1c7d95c5", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				location: "ToolExecutor.ts:handleCompleteBlock entry",
+				message: "handleCompleteBlock called",
+				data: { blockName: block.name, callId: block.call_id ?? null },
+				timestamp: Date.now(),
+				hypothesisId: "H6-handleComplete",
+			}),
+		}).catch(() => {})
+		// #endregion
 		// Check abort flag at the very start to prevent execution after cancellation
 		if (this.taskState.abort) {
 			return

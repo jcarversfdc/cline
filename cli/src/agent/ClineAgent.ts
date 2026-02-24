@@ -1056,9 +1056,6 @@ export class ClineAgent implements acp.Agent {
 		const emitter = this.emitterForSession(sessionId)
 
 		try {
-			if (update.sessionUpdate === "tool_call" || update.sessionUpdate === "tool_call_update") {
-				process.stdout.write(`[Cline] Session event: ${update.sessionUpdate}\n`)
-			}
 			emitter.emit(update.sessionUpdate, update)
 		} catch (error) {
 			Logger.debug("[ClineAgent] Error emitting session update:", error)

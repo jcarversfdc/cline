@@ -24,6 +24,7 @@ const __dirname = path.dirname(__filename)
 const CLI_STATE_OVERRIDES: Record<string, any> = {
 	// CLI always uses background execution, not VSCode terminal
 	vscodeTerminalExecutionMode: "backgroundExec",
+	headlessMode: true,
 	backgroundEditEnabled: true,
 	multiRootEnabled: false,
 	enableCheckpointsSetting: false,

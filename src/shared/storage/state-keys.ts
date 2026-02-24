@@ -77,6 +77,7 @@ const GLOBAL_STATE_FIELDS = {
 	vscodeTerminalExecutionMode: {
 		default: "vscodeTerminal" as "vscodeTerminal" | "backgroundExec",
 	},
+	headlessMode: { default: false as boolean },
 	isNewUser: { default: true as boolean },
 	welcomeViewCompleted: { default: undefined as boolean | undefined },
 	mcpDisplayMode: { default: DEFAULT_MCP_DISPLAY_MODE as McpDisplayMode },

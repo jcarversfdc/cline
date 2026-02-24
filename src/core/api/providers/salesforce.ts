@@ -459,6 +459,9 @@ export class SalesforceHandler implements ApiHandler {
 		const bufferedInvocations = new Map<string, { id: string; name: string; argsBuffer: string }>()
 		let currentInvocationId: string | null = null
 		let seenDone = false
+		// Track cumulative text length to detect non-delta "full response" chunks
+		// that the gateway sometimes sends as a final event.
+		let cumulativeTextLen = 0
 
 		try {
 			while (true) {
@@ -488,9 +491,15 @@ export class SalesforceHandler implements ApiHandler {
 					const generations = parsed.generation_details?.generations ?? []
 					const first = generations[0]
 
-					// Text content
+					// Text content — skip if this single chunk duplicates everything
+					// we've accumulated (gateway sometimes re-sends the full response).
 					if (first?.content) {
-						yield { type: "text" as const, text: first.content }
+						if (cumulativeTextLen > 0 && first.content.length >= cumulativeTextLen) {
+							// Non-delta full-response chunk from gateway; skip to avoid duplication.
+						} else {
+							cumulativeTextLen += first.content.length
+							yield { type: "text" as const, text: first.content }
+						}
 					}
 
 					// Tool invocations (buffered – gateway sends arguments incrementally)

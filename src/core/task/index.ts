@@ -522,7 +522,6 @@ export class Task {
 			},
 			getClineMessages: () => this.messageStateHandler.getClineMessages() as Array<{ ask?: string; say?: string }>,
 			addToUserMessageContent: (content: { type: string; text: string }) => {
-				// Cast to ClineTextContentBlock which is compatible with ClineContent
 				this.taskState.userMessageContent.push({ type: "text", text: content.text } as ClineTextContentBlock)
 			},
 		}
@@ -679,6 +678,28 @@ export class Task {
 				text,
 			})
 			await this.postStateToWebview()
+		}
+
+		// In headless mode, auto-resolve end-of-turn asks so the task loop
+		// is not blocked waiting for user input that will never come.
+		// Limitation: interactive question/answer loops are not supported.
+		if (this.stateManager.getGlobalStateKey("headlessMode")) {
+			const headlessAutoResolveAsks: ClineAsk[] = [
+				"completion_result",
+				"followup",
+				"plan_mode_respond",
+				"act_mode_respond",
+				"resume_task",
+				"resume_completed_task",
+			]
+			if (headlessAutoResolveAsks.includes(type)) {
+				return {
+					response: "yesButtonClicked",
+					text: undefined,
+					images: undefined,
+					files: undefined,
+				}
+			}
 		}
 
 		await pWaitFor(() => this.taskState.askResponse !== undefined || this.taskState.lastMessageTs !== askTs, {

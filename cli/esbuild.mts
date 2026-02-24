@@ -209,10 +209,7 @@ if (production) {
 }
 
 const config: esbuild.BuildOptions = {
-	entryPoints: [
-		{ in: path.join(__dirname, "src", "index.ts"), out: "cli" },
-		{ in: path.join(__dirname, "src", "service-api.ts"), out: "service-api" },
-	],
+	entryPoints: [{ in: path.join(__dirname, "src", "index.ts"), out: "cli" }],
 	bundle: true,
 	minify: production,
 	sourcemap: !production,

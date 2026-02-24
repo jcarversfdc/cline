@@ -1,16 +1,15 @@
 /**
  * Shared Salesforce LLM Gateway configuration for Cline.
  *
- * Used by both the programmatic service-api (createClineEngine) and ACP mode
- * (cline --acp) when credentials are supplied via environment variables.
+ * Used by ACP mode (cline --acp) when credentials are supplied via environment
+ * variables. ClineAgent.initialize() calls getSalesforceCredentialsFromEnv() and,
+ * if present, configureSalesforceProvider() and enableAutoApprove().
  *
  * PAIN POINT: The Salesforce gateway customization (src/core/api/providers/salesforce.ts)
  * is a single implementation used for all LLM calls when the provider is "salesforce".
  * Cline only uses it when StateManager has actModeApiProvider/planModeApiProvider and
- * credentials set. In ACP mode nothing was populating StateManager for Salesforce, so
- * the customization was not in effect until we added env-var-based config here. We do
- * not re-implement the gateway; we only provide a second way to configure StateManager
- * (env vars for subprocess, explicit credentials for in-process).
+ * credentials set. We do not re-implement the gateway; we only configure StateManager
+ * from env vars when running as a subprocess.
  *
  * @module utils/salesforce-config
  */
@@ -19,7 +18,7 @@ import { StateManager } from "@/core/storage/StateManager"
 
 /**
  * Salesforce org credentials for the LLM gateway.
- * Can be passed explicitly (e.g. from service-api) or read from env (ACP mode).
+ * Read from env in ACP mode via getSalesforceCredentialsFromEnv().
  */
 export interface SalesforceCredentials {
 	/** Salesforce org access token (from OAuth) */

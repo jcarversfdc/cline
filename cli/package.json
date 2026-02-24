@@ -4,8 +4,7 @@
 	"description": "Autonomous coding agent CLI - capable of creating/editing files, running commands, using the browser, and more",
 	"main": "dist/cli.mjs",
 	"exports": {
-		".": "./dist/cli.mjs",
-		"./service-api": "./dist/service-api.mjs"
+		".": "./dist/cli.mjs"
 	},
 	"bin": {
 		"cline": "./dist/cli.mjs"

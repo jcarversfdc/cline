@@ -693,6 +693,11 @@ export class Task {
 				"resume_completed_task",
 			]
 			if (headlessAutoResolveAsks.includes(type)) {
+				// For completion_result, signal the task loop to stop so we don't give the LLM
+				// another turn (which triggers "You did not use a tool" and a retry loop).
+				if (type === "completion_result") {
+					this.taskState.abort = true
+				}
 				return {
 					response: "yesButtonClicked",
 					text: undefined,
@@ -2237,9 +2242,10 @@ export class Task {
 	}
 
 	async recursivelyMakeClineRequests(userContent: ClineContent[], includeFileDetails = false): Promise<boolean> {
-		// Check abort flag at the very start to prevent any execution after cancellation
+		// When aborted (user cancel or headless completion_result), exit the task loop cleanly
+		// instead of throwing so the loop can break and the task can end normally.
 		if (this.taskState.abort) {
-			throw new Error("Task instance aborted")
+			return true
 		}
 
 		// Increment API request counter for focus chain list management

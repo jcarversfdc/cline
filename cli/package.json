@@ -18,6 +18,11 @@
 		"x64",
 		"arm64"
 	],
+	"files": [
+		"dist/cli.mjs",
+		"dist/tree-sitter-*.wasm",
+		"man/cline.1"
+	],
 	"man": "./man/cline.1",
 	"type": "module",
 	"engines": {
